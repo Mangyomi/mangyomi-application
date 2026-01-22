@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+dist-electron/
+release/
+
+# Database
+*.db
+*.db-journal
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# TypeScript
+*.tsbuildinfo
+
+# Extensions
+extensions/*
+
+# Installer build artifacts
+installer/node_modules/
+installer/dist/
+installer/dist-electron/
+installer/release/
+installer/resources/*.zip
+installer/resources/*.7z
+
+# Certificates (keep secret!)
+build/*.pfx
+
+# Tauri
+installer/src-tauri/target/
+
+# Agent
+.agent

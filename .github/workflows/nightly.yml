@@ -1,0 +1,313 @@
+name: Nightly Build
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    # Only run on manual trigger OR if commit message contains 'nightly release'
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'nightly release')
+    outputs:
+      nightly_version: ${{ steps.version.outputs.nightly_version }}
+    
+    env:
+      CSC_LINK: ${{ secrets.CSC_LINK }}
+      CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Setup Python for node-gyp
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python setuptools (for distutils)
+        run: pip install setuptools
+
+      - name: Cache Electron
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/AppData/Local/electron/Cache
+            ~/.cache/electron
+            ~/Library/Caches/electron
+          key: electron-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            electron-${{ runner.os }}-
+
+      - name: Install main app dependencies
+        run: npm ci
+
+      - name: Set nightly version
+        id: version
+        run: node scripts/set-nightly-version.js
+
+      - name: Clean build artifacts
+        run: |
+          # Remove any stale build artifacts
+          if (Test-Path "dist") { Remove-Item -Recurse -Force "dist" }
+          if (Test-Path "dist-electron") { Remove-Item -Recurse -Force "dist-electron" }
+          if (Test-Path "release") { Remove-Item -Recurse -Force "release" }
+          if (Test-Path "node_modules/.vite") { Remove-Item -Recurse -Force "node_modules/.vite" }
+          Write-Host "Cleaned build artifacts"
+        shell: pwsh
+
+      - name: Use nightly icons
+        run: |
+          # Swap build icons for nightly
+          if (Test-Path "build\icon-nightly.png") {
+            Copy-Item "build\icon-nightly.png" "build\icon.png" -Force
+          }
+          if (Test-Path "build\icon-nightly.ico") {
+            Copy-Item "build\icon-nightly.ico" "build\icon.ico" -Force
+          }
+          # Update installer src-tauri icons
+          if (Test-Path "installer\src-tauri\icons\icon-nightly.ico") {
+            Copy-Item "installer\src-tauri\icons\icon-nightly.ico" "installer\src-tauri\icons\icon.ico" -Force
+          }
+          if (Test-Path "installer\src-tauri\icons\icon-nightly.png") {
+            Copy-Item "installer\src-tauri\icons\icon-nightly.png" "installer\src-tauri\icons\icon.png" -Force
+          }
+          # Update installer public folder icon (for React UI)
+          if (Test-Path "installer\public") {
+            if (Test-Path "installer\src-tauri\icons\icon-nightly.png") {
+              Copy-Item "installer\src-tauri\icons\icon-nightly.png" "installer\public\icon.png" -Force
+            }
+          }
+          # Update NSIS wrapper icon (used by wrapper.nsi)
+          if (Test-Path "installer\src-tauri\icons\icon-nightly.ico") {
+            Copy-Item "installer\src-tauri\icons\icon-nightly.ico" "installer\icon.ico" -Force
+            Write-Host "Copied nightly icon to installer/icon.ico for NSIS wrapper"
+          }
+          Write-Host "Nightly icons applied"
+        shell: pwsh
+
+      - name: Build Vite app
+        run: |
+          # Show version that will be embedded
+          $pkg = Get-Content package.json -Raw | ConvertFrom-Json
+          Write-Host "=== BUILDING WITH VERSION: $($pkg.version) ==="
+          
+          # Clear any Vite cache
+          if (Test-Path "node_modules/.vite") {
+            Remove-Item -Recurse -Force "node_modules/.vite"
+          }
+          
+          npm run build
+        shell: pwsh
+
+      - name: Build Electron app (unpacked)
+        run: |
+          # Verify version before electron-builder
+          $pkg = Get-Content package.json -Raw | ConvertFrom-Json
+          Write-Host "=== ELECTRON-BUILDER USING VERSION: $($pkg.version) ==="
+          
+          npx electron-builder --config electron-builder.config.js --publish never
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create version.txt for installer
+        run: |
+          $version = (Get-Content package.json | ConvertFrom-Json).version
+          Set-Content -Path "release/win-unpacked/version.txt" -Value $version
+          Write-Host "Created version.txt with version: $version"
+        shell: pwsh
+
+      - name: Package app for installer (7z)
+        run: |
+          cd release/win-unpacked
+          7z a -t7z -mx=9 ../app.7z *
+        shell: pwsh
+
+      - name: Install installer dependencies
+        run: npm ci
+        working-directory: installer
+
+      - name: Copy app package to installer
+        run: |
+          New-Item -ItemType Directory -Force -Path resources
+          Copy-Item ..\release\app.7z resources\app.7z -Force
+          # Copy blockmap for differential updates caching
+          $blockmap = Get-ChildItem ..\release\*.blockmap -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($blockmap) {
+            Copy-Item $blockmap.FullName resources\installer.blockmap -Force
+            Write-Host "Copied blockmap: $($blockmap.Name)"
+          }
+        working-directory: installer
+        shell: pwsh
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            installer/src-tauri/target/
+          key: ${{ runner.os }}-cargo-nightly-installer-${{ hashFiles('installer/src-tauri/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-nightly-installer-
+
+      - name: Build custom installer (Tauri)
+        run: npm run tauri build
+        working-directory: installer
+
+      - name: Install NSIS
+        run: |
+          choco install nsis -y
+          # Add NSIS to PATH
+          echo "C:\Program Files (x86)\NSIS" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Package Installer (NSIS)
+        run: .\package-nsis.ps1
+        working-directory: installer
+        shell: pwsh
+
+      - name: Sign installer
+        run: |
+          if (-not $env:CSC_LINK) {
+            Write-Host "No signing certificate provided, skipping signing"
+            exit 0
+          }
+          
+          $certBytes = [Convert]::FromBase64String($env:CSC_LINK)
+          [IO.File]::WriteAllBytes("cert.pfx", $certBytes)
+          
+          $signtool = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\signtool.exe" -ErrorAction SilentlyContinue | 
+                      Sort-Object { [version]($_.Directory.Parent.Name) } -Descending | 
+                      Select-Object -First 1
+          
+          if (-not $signtool) {
+            Write-Warning "signtool.exe not found, skipping signing"
+          } else {
+            Write-Host "Using signtool: $($signtool.FullName)"
+            & $signtool.FullName sign /f cert.pfx /p $env:CSC_KEY_PASSWORD /fd SHA256 /tr http://timestamp.digicert.com /td SHA256 "release\Mangyomi-Installer.exe"
+          }
+          
+          Remove-Item cert.pfx -Force -ErrorAction SilentlyContinue
+        shell: pwsh
+        env:
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-build-windows
+          path: |
+            release/Mangyomi-Installer.exe
+            release/*.blockmap
+            release/latest.yml
+          if-no-files-found: error
+
+  build-linux:
+    runs-on: ubuntu-latest
+    # Only run on manual trigger OR if commit message contains 'nightly release'
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, 'nightly release')
+    outputs:
+      nightly_version: ${{ steps.version.outputs.nightly_version }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Cache Electron
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/electron
+          key: electron-linux-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            electron-linux-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set nightly version
+        id: version
+        run: node scripts/set-nightly-version.js
+
+      - name: Use nightly icons
+        run: |
+          if [ -f "build/icon-nightly.png" ]; then
+            cp "build/icon-nightly.png" "build/icon.png"
+          fi
+          echo "Nightly icons applied for Linux"
+
+      - name: Build Vite app
+        run: npm run build
+
+      - name: Build Linux AppImage
+        run: npx electron-builder --config electron-builder.config.js --linux --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-build-linux
+          path: |
+            release/*.AppImage
+          if-no-files-found: error
+
+  release:
+    needs: [build, build-linux]
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create Nightly Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: "nightly-${{ needs.build.outputs.nightly_version }}"
+          name: "Nightly Build v${{ needs.build.outputs.nightly_version }}"
+          prerelease: true
+          generate_release_notes: true
+          files: |
+            artifacts/Mangyomi-Installer.exe
+            artifacts/*.blockmap
+            artifacts/latest.yml
+            artifacts/*.AppImage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clean up old nightly releases
+        uses: dev-drprasad/delete-older-releases@v0.3.4
+        with:
+          keep_latest: 5
+          delete_tag_pattern: "nightly-"
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+

@@ -1,0 +1,289 @@
+/* CSS for PrefetchOverlay - matching MangaDetail.css styles */
+.prefetch-progress-overlay {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    /* Ensure high z-index for global overlay */
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.prefetch-card {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    width: 300px;
+    box-shadow: var(--shadow-xl);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.prefetch-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+}
+
+.prefetch-count {
+    color: var(--color-text-muted);
+}
+
+.prefetch-bar-bg {
+    height: 6px;
+    background: var(--color-bg-secondary);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.prefetch-bar-fill {
+    height: 100%;
+    background: var(--color-accent);
+    transition: width 0.3s ease;
+}
+
+.prefetch-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+}
+
+.btn-cancel-prefetch {
+    background: none;
+    border: none;
+    color: var(--color-error);
+    cursor: pointer;
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.btn-cancel-prefetch:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+/* Error State */
+.prefetch-card.prefetch-error {
+    border-color: var(--color-error, #ef4444);
+}
+
+.prefetch-card.prefetch-error .prefetch-title {
+    color: var(--color-error, #ef4444);
+}
+
+.prefetch-bar-bg.prefetch-bar-error {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.prefetch-bar-fill.prefetch-bar-fill-error {
+    background: var(--color-error, #ef4444);
+}
+
+.prefetch-error-message {
+    color: var(--color-error, #ef4444);
+    font-weight: 500;
+    flex: 1;
+}
+
+.prefetch-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-close-prefetch {
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    line-height: 1;
+}
+
+.btn-close-prefetch:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-error, #ef4444);
+}
+
+.btn-resume-prefetch {
+    background: var(--color-accent);
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.btn-resume-prefetch:hover {
+    filter: brightness(1.1);
+}
+
+/* Summary Modal */
+.prefetch-summary-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.prefetch-summary-modal {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 420px;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-xl);
+}
+
+.prefetch-summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.prefetch-summary-header h3 {
+    margin: 0;
+    font-size: var(--font-size-lg);
+}
+
+.prefetch-summary-content {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.prefetch-manga-title {
+    font-weight: 600;
+    font-size: var(--font-size-md);
+    margin: 0 0 16px 0;
+    color: var(--color-text-primary);
+}
+
+.prefetch-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.prefetch-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-size-sm);
+}
+
+.prefetch-stat.success {
+    color: var(--color-success, #22c55e);
+}
+
+.prefetch-stat.failed {
+    color: var(--color-error, #ef4444);
+}
+
+.prefetch-stat.skipped {
+    color: var(--color-warning, #f59e0b);
+}
+
+.prefetch-failed-list {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: var(--radius-md);
+    padding: 12px;
+}
+
+.failed-list-title {
+    margin: 0 0 8px 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-error, #ef4444);
+    font-weight: 500;
+}
+
+.prefetch-failed-list ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--font-size-xs);
+}
+
+.prefetch-failed-list li {
+    display: flex;
+    gap: 8px;
+    padding: 4px 0;
+    color: var(--color-text-secondary);
+}
+
+.failed-chapter {
+    flex-shrink: 0;
+    font-weight: 500;
+    color: var(--color-text-primary);
+}
+
+.failed-url {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.more-failed {
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+.prefetch-summary-actions {
+    padding: 16px 20px;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: flex-end;
+}

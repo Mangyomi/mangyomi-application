@@ -1,0 +1,176 @@
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    /* Retain original width property */
+    height: calc(100vh - 32px);
+    /* Subtract title bar height */
+    background-color: var(--bg-secondary);
+    border-right: 2px solid var(--color-accent);
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    transition: width 0.1s ease-out;
+    /* The original had z-index: 100; */
+    z-index: 100;
+    /* The provided snippet had position: relative; box-sizing: border-box; overflow: hidden; */
+    /* Adding these as they seem to be intended additions */
+    position: relative;
+    box-sizing: border-box;
+    /* Ensure padding doesn't affect width */
+    overflow: hidden;
+    /* Prevent scrollbars during resize */
+}
+
+.sidebar-header {
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.logo-icon {
+    font-size: 24px;
+}
+
+.logo-text {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--color-accent), #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+/* Collapsed State */
+.sidebar.collapsed {
+    width: var(--sidebar-width);
+    align-items: center;
+}
+
+.sidebar.collapsed .sidebar-header {
+    padding: var(--spacing-md);
+    justify-content: center;
+}
+
+.sidebar.collapsed .logo {
+    justify-content: center;
+}
+
+.sidebar.collapsed .sidebar-nav {
+    padding: var(--spacing-md) var(--spacing-xs);
+    align-items: center;
+}
+
+.sidebar.collapsed .nav-link {
+    justify-content: center;
+    padding: var(--spacing-sm);
+    width: 48px;
+    height: 48px;
+}
+
+.sidebar.collapsed .sidebar-footer {
+    display: none;
+}
+
+/* Resize Handle */
+.sidebar-resizer {
+    position: absolute;
+    right: -4px;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    /* Hit area */
+    cursor: col-resize;
+    z-index: 101;
+    transition: background 0.2s;
+    background: transparent;
+}
+
+.sidebar-resizer:hover,
+.sidebar-resizer:active {
+    background: var(--color-accent);
+    opacity: 0.5;
+}
+
+/* Collapsed nav dot */
+.nav-count-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    box-shadow: 0 0 0 2px var(--color-bg-secondary);
+}
+
+.nav-link {
+    position: relative;
+    /* For absolute dot */
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+
+.nav-link:hover {
+    color: var(--color-text-primary);
+    background: var(--color-bg-hover);
+}
+
+.nav-link.active {
+    color: var(--color-accent);
+    background: var(--color-accent-muted);
+}
+
+.nav-link.active svg {
+    color: var(--color-accent);
+}
+
+.nav-link svg {
+    flex-shrink: 0;
+}
+
+.nav-label {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+}
+
+.nav-count {
+    margin-left: auto;
+    font-size: var(--font-size-xs);
+    padding: 2px 8px;
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius-full);
+    color: var(--color-text-muted);
+}
+
+.sidebar-footer {
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--color-border);
+}
+
+.version {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+    text-align: center;
+}

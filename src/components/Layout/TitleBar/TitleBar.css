@@ -1,0 +1,104 @@
+.titlebar {
+    height: 32px;
+    background-color: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 9999;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.titlebar-drag-region {
+    -webkit-app-region: drag;
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+    /* For absolute centering */
+    padding-left: 8px;
+    /* reduced padding */
+}
+
+.titlebar-left-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 10;
+}
+
+.titlebar-back-btn {
+    -webkit-app-region: no-drag;
+    /* Critical for interactivity */
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.titlebar-back-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.app-icon {
+    font-size: 16px;
+}
+
+.window-controls {
+    display: flex;
+    height: 100%;
+    -webkit-app-region: no-drag;
+}
+
+.control-btn {
+    width: 46px;
+    height: 100%;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.1s;
+}
+
+.control-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.control-btn.close:hover {
+    background-color: #ef4444;
+    color: white;
+}
+
+.control-btn svg {
+    opacity: 0.8;
+}
+
+.control-btn:hover svg {
+    opacity: 1;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}

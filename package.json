@@ -1,0 +1,60 @@
+{
+  "name": "mangyomi",
+  "version": "1.0.0",
+  "description": "Mangyomi - Manga Reader",
+  "main": "dist-electron/main.js",
+  "license": "GPL-3.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "clean:electron": "node -e \"require('fs').rmSync('dist-electron', { recursive: true, force: true })\"",
+    "electron:dev": "vite",
+    "electron:build": "npm run clean:electron && vite build && electron-builder --config electron-builder.config.js",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "keywords": [
+    "manga",
+    "reader",
+    "electron",
+    "react"
+  ],
+  "author": "",
+  "dependencies": {
+    "@types/react-virtualized-auto-sizer": "^1.0.4",
+    "adm-zip": "^0.5.16",
+    "bufferutil": "^4.1.0",
+    "discord-rpc": "^4.0.1",
+    "electron-store": "^11.0.2",
+    "electron-updater": "^6.6.2",
+    "jsdom": "^25.0.1",
+    "protobufjs": "^8.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.1.1",
+    "react-virtualized-auto-sizer": "^2.0.1",
+    "react-virtuoso": "^4.18.1",
+    "react-window": "^2.2.3",
+    "better-sqlite3": "^11.7.0",
+    "utf-8-validate": "^5.0.10",
+    "zustand": "^5.0.2"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^4.0.2",
+    "@types/adm-zip": "^0.5.7",
+    "@types/discord-rpc": "^4.0.10",
+    "@types/jsdom": "^27.0.0",
+    "@types/node": "^22.10.3",
+    "@types/react": "^18.3.27",
+    "@types/react-dom": "^18.3.7",
+    "@types/better-sqlite3": "^7.6.12",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "electron": "^36.2.0",
+    "electron-builder": "^25.1.8",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.6",
+    "vite-plugin-electron": "^0.28.8",
+    "vite-plugin-electron-renderer": "^0.14.6"
+  }
+}

@@ -1,0 +1,129 @@
+.range-slider {
+    min-width: 200px;
+}
+
+.slider-track-container {
+    position: relative;
+    height: 20px;
+}
+
+.slider-track {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #3f3f46;
+    border-radius: 2px;
+    transform: translateY(-50%);
+    overflow: hidden;
+}
+
+.slider-fill {
+    height: 100%;
+    background: var(--primary, #a855f7);
+    border-radius: 2px;
+    transition: width 0.05s ease;
+}
+
+.slider-thumb {
+    position: absolute;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    background: var(--primary, #a855f7);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    transition: left 0.05s ease, transform 0.1s ease;
+    z-index: 3;
+}
+
+.slider-track-container:hover .slider-thumb {
+    transform: translate(-50%, -50%) scale(1.15);
+}
+
+.slider-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    z-index: 4;
+}
+
+.slider-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+}
+
+/* Tick marks */
+.slider-ticks {
+    position: absolute;
+    top: 50%;
+    left: 1px;
+    right: 1px;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.slider-tick {
+    position: absolute;
+    width: 1.5px;
+    height: 8px;
+    background: #71717a;
+    border-radius: 1px;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: background 0.15s;
+}
+
+.slider-tick.active {
+    background: var(--primary, #a855f7);
+}
+
+.slider-tick.hidden {
+    opacity: 0;
+}
+
+.slider-tick.end {
+    height: 12px;
+}
+
+/* Labels */
+.slider-labels {
+    position: relative;
+    height: 18px;
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--text-muted, #71717a);
+}
+
+.slider-labels span {
+    position: absolute;
+    transform: translateX(-50%);
+    white-space: nowrap;
+}
+
+.slider-labels span.active {
+    color: var(--primary, #a855f7);
+    font-weight: 600;
+}
+
+/* Disabled state */
+.range-slider.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.range-slider.disabled .slider-input {
+    cursor: not-allowed;
+}

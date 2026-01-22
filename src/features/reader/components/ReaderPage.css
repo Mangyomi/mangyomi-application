@@ -1,0 +1,546 @@
+.chapter-reader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #000;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Controls */
+.reader-controls {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.reader-header {
+    pointer-events: auto;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.reader-header:hover {
+    opacity: 1;
+}
+
+.reader-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent);
+}
+
+.reader-title-container {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    z-index: 2000;
+}
+
+.chapter-select-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-primary);
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 2px 8px;
+    /* Reduced vertical padding */
+    border-radius: 12px;
+    /* Pill shape */
+    transition: all 0.2s ease;
+    opacity: 0.9;
+    /* Slightly distinct from page count */
+}
+
+.chapter-select-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    opacity: 1;
+}
+
+.chapter-select-btn.active {
+    background: rgba(255, 255, 255, 0.12);
+    opacity: 1;
+}
+
+.dropdown-caret {
+    font-size: 10px;
+    /* Smaller caret */
+    opacity: 0.5;
+    transition: transform 0.2s;
+    margin-top: 2px;
+    /* Visual optical alignment */
+}
+
+.chapter-select-btn.active .dropdown-caret {
+    transform: rotate(180deg);
+}
+
+.chapter-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(18, 18, 18, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    width: 360px;
+    max-height: 50vh;
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: dropdownSlide 0.2s ease-out;
+}
+
+@keyframes dropdownSlide {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+.chapter-dropdown-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+
+.chapter-count {
+    font-size: 11px;
+    opacity: 0.7;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.chapter-list {
+    overflow-y: auto;
+    padding: 4px;
+    flex: 1;
+}
+
+.chapter-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.chapter-list::-webkit-scrollbar-track {
+    background: rgba(128, 128, 128, 0.1);
+    border-radius: 3px;
+}
+
+.chapter-list::-webkit-scrollbar-thumb {
+    background: rgba(128, 128, 128, 0.4);
+    border-radius: 3px;
+}
+
+.chapter-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(128, 128, 128, 0.6);
+}
+
+.chapter-option {
+    padding: 10px 12px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.1s ease;
+    color: var(--color-text-secondary);
+    margin-bottom: 2px;
+    border: 1px solid transparent;
+}
+
+.chapter-option:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-text-primary);
+}
+
+.chapter-option.active {
+    background: rgba(var(--color-accent-rgb), 0.15);
+    /* Assuming CSS variable exists, fallback below */
+    background: rgba(168, 85, 247, 0.15);
+    color: #c084fc;
+    border-color: rgba(168, 85, 247, 0.2);
+}
+
+.chapter-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    overflow: hidden;
+}
+
+.chapter-option-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.chapter-date {
+    font-size: 11px;
+    color: var(--color-text-muted);
+}
+
+.chapter-read-indicator {
+    font-size: 10px;
+    padding: 2px 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+.chapter-option.active .chapter-read-indicator {
+    background: rgba(168, 85, 247, 0.2);
+    color: #c084fc;
+}
+
+.page-indicator {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+.reader-nav-actions {
+    margin-left: auto;
+}
+
+.reader-nav-actions,
+.reader-options,
+.reader-zoom-controls,
+.reader-mode-controls {
+    display: flex;
+    gap: var(--spacing-xs);
+    align-items: center;
+}
+
+.reader-options {
+    gap: var(--spacing-lg);
+}
+
+.btn-text {
+    font-size: var(--font-size-sm);
+    min-width: 60px;
+    color: var(--color-text-primary);
+}
+
+.reader-options .btn-icon.active {
+    background: var(--color-accent-muted);
+    color: var(--color-accent);
+}
+
+/* Sidebar Progress */
+.reader-sidebar {
+    position: fixed;
+    top: 50%;
+    right: 24px;
+    /* Move away from scrollbar */
+    transform: translateY(-50%);
+    width: 4px;
+    /* Thinner */
+    height: 70vh;
+    /* Not full height - "smaller" floating bar */
+    z-index: 1002;
+    pointer-events: auto;
+    /* Enable interaction */
+    cursor: pointer;
+    /* Visual cue for interaction */
+    opacity: 0;
+    /* Hide initially, show on hover/activity if desired? or always visible? */
+    /* Let's keep it visible but maybe subtle? The image showed distinct purple. */
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.reader-sidebar:hover,
+.chapter-reader:hover .reader-sidebar {
+    opacity: 1;
+}
+
+.sidebar-track {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.sidebar-fill {
+    width: 100%;
+    background: #a855f7;
+    /* Purple accent to match user image if var not available, but user had var(--color-accent) */
+    background: var(--color-accent, #a855f7);
+    transition: height 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 4px;
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+    /* Glow */
+}
+
+/* Vertical Scroll Mode */
+.reader-scroll-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+    /* Allow horizontal scroll for zoomed images */
+    display: flex;
+    flex-direction: column;
+    padding: 60px 0;
+    scrollbar-width: none;
+    /* Hide scrollbar completely */
+}
+
+.reader-scroll-container::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Opera */
+}
+
+.reader-image {
+    /* Width controlled by inline style for zoom */
+    width: auto;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    /* Center image when smaller than viewport */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    /* Add shadow for depth */
+    display: block;
+}
+
+.reader-page-wrapper {
+    width: 100%;
+    /* Removed min-height to fix gaps in webtoon mode */
+    display: flex;
+    justify-content: center;
+    /* Center the image */
+    align-items: flex-start;
+    /* Prevent image stretching */
+    flex-shrink: 0;
+    /* Prevent wrapper compression */
+    position: relative;
+    /* Create stacking context */
+}
+
+@media (max-width: 768px) {
+    .reader-image {
+        max-width: 100%;
+    }
+}
+
+.chapter-end {
+    padding: var(--spacing-2xl);
+    text-align: center;
+}
+
+.chapter-end p {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-muted);
+    margin-bottom: var(--spacing-lg);
+}
+
+.chapter-nav-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+}
+
+/* Horizontal mode end panel - needs to fill the container */
+.chapter-end.horizontal-end {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+}
+
+/* Horizontal Page Mode */
+.reader-horizontal-container {
+    flex: 1;
+    display: flex;
+    position: relative;
+    overflow: auto;
+    /* Allow scrolling when zoomed */
+}
+
+.reader-page {
+    max-width: 100%;
+    max-height: 100vh;
+    object-fit: contain;
+    margin: auto;
+    /* Safe centering */
+}
+
+.page-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 80px;
+    height: 200px;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 48px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.page-nav:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.page-nav.prev {
+    left: 0;
+}
+
+.page-nav.next {
+    right: 0;
+}
+
+.page-nav:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Loading State */
+.reader-loading {
+    position: fixed;
+    top: 32px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    color: white;
+    background: #000;
+    color: white;
+    gap: var(--spacing-md);
+}
+
+/* Persistent Page Indicator */
+.reader-persistent-indicator {
+    position: fixed;
+    bottom: 24px;
+    right: 40px;
+    /* Left of the scrollbar (24px + width approx) */
+    background: rgba(0, 0, 0, 0.7);
+    color: rgba(255, 255, 255, 0.9);
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+    font-weight: 500;
+    pointer-events: none;
+    z-index: 1003;
+    /* Above sidebar */
+    backdrop-filter: blur(4px);
+}
+
+/* Inline Loading State */
+.reader-loading-inline {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 0;
+    gap: var(--spacing-md);
+    color: var(--color-text-secondary);
+}
+
+.reader-loading-skeleton {
+    max-width: 800px;
+    width: 90%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.skeleton-page {
+    width: 100%;
+    padding-bottom: 140%;
+    /* Approx A4/Manga ratio */
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.3;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+
+    100% {
+        opacity: 0.3;
+    }
+}
+
+/* Reader window controls (shown in header since TitleBar is hidden) */
+.reader-window-controls {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: var(--spacing-sm);
+    padding-left: var(--spacing-sm);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.reader-close-btn:hover {
+    background: rgba(220, 53, 69, 0.8) !important;
+    color: white;
+}

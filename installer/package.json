@@ -1,0 +1,27 @@
+{
+    "name": "mangyomi-installer",
+    "version": "2.4.0",
+    "description": "Custom installer for Mangyomi",
+    "main": "dist-electron/main.js",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "tauri": "tauri"
+    },
+    "dependencies": {
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
+    },
+    "devDependencies": {
+        "@tauri-apps/api": "^2.9.1",
+        "@tauri-apps/cli": "^2.9.6",
+        "@tauri-apps/plugin-dialog": "^2.4.2",
+        "@tauri-apps/plugin-shell": "^2.3.3",
+        "@types/node": "^20.10.0",
+        "@types/react": "^18.2.0",
+        "@types/react-dom": "^18.2.0",
+        "@vitejs/plugin-react": "^4.3.4",
+        "typescript": "^5.7.2",
+        "vite": "^6.0.6"
+    }
+}

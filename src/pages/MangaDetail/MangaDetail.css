@@ -1,0 +1,323 @@
+.manga-detail-page {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Hero Section */
+.manga-hero {
+    position: relative;
+    margin: calc(var(--spacing-lg) * -1);
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-xl);
+    overflow: hidden;
+}
+
+.manga-hero-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    filter: blur(30px) brightness(0.3);
+    transform: scale(1.1);
+}
+
+.manga-hero-content {
+    position: relative;
+    display: flex;
+    gap: var(--spacing-xl);
+    z-index: 1;
+}
+
+.manga-cover {
+    width: 200px;
+    height: 280px;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    flex-shrink: 0;
+}
+
+.manga-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.manga-title {
+    font-size: var(--font-size-3xl);
+    font-weight: 700;
+    line-height: 1.2;
+    color: white;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.manga-author {
+    font-size: var(--font-size-md);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.manga-status {
+    margin: var(--spacing-sm) 0;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    text-transform: capitalize;
+    border-radius: var(--radius-full);
+    background: var(--color-bg-elevated);
+}
+
+.status-badge.ongoing {
+    background: rgba(34, 197, 94, 0.2);
+    color: var(--color-success);
+}
+
+.status-badge.completed {
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--color-info);
+}
+
+.manga-genres {
+    display: flex;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
+}
+
+.genre-badge {
+    padding: 2px 8px;
+    font-size: var(--font-size-xs);
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius-full);
+    color: var(--color-text-secondary);
+}
+
+.manga-user-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+}
+
+.user-tag-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    border: 1px solid;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-primary);
+    background: var(--color-bg-tertiary);
+}
+
+.tag-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.manga-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
+.btn-anilist-linked {
+    background: rgba(138, 43, 226, 0.15) !important;
+    border-color: rgba(138, 43, 226, 0.5) !important;
+    color: #b366e0 !important;
+}
+
+/* Sections */
+.manga-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.section-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    margin-bottom: var(--spacing-md);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.chapter-count {
+    font-size: var(--font-size-sm);
+    font-weight: normal;
+    color: var(--color-text-muted);
+}
+
+.manga-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: 1.7;
+    white-space: pre-line;
+}
+
+/* Chapter List */
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-sm);
+}
+
+.chapter-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-icon {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-icon:hover {
+    background: var(--color-bg-hover);
+    color: var(--color-text-primary);
+    border-color: var(--color-accent);
+}
+
+.btn-icon:focus {
+    outline: none;
+    border-color: var(--color-accent);
+}
+
+.btn-icon:focus-visible {
+    outline: none;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 2px var(--color-accent-muted);
+}
+
+.chapter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.chapter-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    background: var(--color-bg-tertiary);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.chapter-item:hover {
+    background: var(--color-bg-hover);
+}
+
+.chapter-item.read {
+    opacity: 0.6;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.chapter-item.read .chapter-number {
+    color: var(--color-text-muted);
+}
+
+.chapter-item.read .chapter-title {
+    color: var(--color-text-muted);
+}
+
+.detail-chapter-info {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    /* Reduced from var(--spacing-md) */
+    flex: 1;
+    text-align: left;
+}
+
+/* Actions */
+.chapter-actions {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-left: 12px;
+}
+
+.chapter-item:hover .chapter-actions {
+    display: flex;
+}
+
+.action-icon-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: var(--color-text-primary);
+    opacity: 0.6;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.action-icon-btn:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.chapter-number {
+    font-weight: 500;
+    color: var(--color-accent);
+    min-width: 60px;
+    /* Adjusted to 60px based on feedback */
+}
+
+.chapter-title {
+    color: var(--color-text-primary);
+    font-weight: 500;
+}
+
+.chapter-date {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+}
+
+.manga-metadata {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.metadata-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+}
+
+.metadata-label {
+    opacity: 0.7;
+    margin-right: 0.25rem;
+    text-transform: capitalize;
+}
+
+.metadata-value {
+    color: var(--text-primary);
+    font-weight: 500;
+}

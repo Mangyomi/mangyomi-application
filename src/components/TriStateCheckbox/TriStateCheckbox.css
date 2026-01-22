@@ -1,0 +1,82 @@
+.tri-state-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 999px;
+    transition: all var(--transition-fast);
+    user-select: none;
+    font-size: 13px;
+    border: 1px solid var(--color-border);
+    background: transparent;
+}
+
+.tri-state-checkbox:hover {
+    border-color: var(--color-text-secondary);
+}
+
+/* Neutral state - outline only */
+.tri-state-checkbox.neutral {
+    border-color: var(--color-border);
+    background: transparent;
+    color: var(--color-text-secondary);
+}
+
+/* Include state - green filled */
+.tri-state-checkbox.include {
+    border-color: var(--color-accent);
+    background: var(--color-accent);
+    color: white;
+}
+
+/* Exclude state - red filled */
+.tri-state-checkbox.exclude {
+    border-color: var(--color-error, #ef4444);
+    background: var(--color-error, #ef4444);
+    color: white;
+}
+
+/* Hide the box - show icon inline */
+.tri-state-box {
+    display: none;
+}
+
+.tri-state-icon {
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.tri-state-label {
+    font-size: inherit;
+    color: inherit;
+    font-weight: 500;
+}
+
+/* Filter group for tri-state */
+.tri-state-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    flex: 1;
+    min-width: 100%;
+}
+
+.tri-state-filter-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--spacing-xs);
+}
+
+.tri-state-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-height: 180px;
+    overflow-y: auto;
+    padding: 4px 0;
+}
