@@ -1187,7 +1187,7 @@ function Settings() {
             )}
 
             {shouldShow('about-github') && (
-                <div className="setting-item clickable" onClick={() => window.electronAPI.app.openExternal('https://github.com/Mangyomi/mangyomi-app')}>
+                <div className="setting-item clickable" onClick={() => window.electronAPI.app.openExternal('https://github.com/Mangyomi/mangyomi-application')}>
                     <div className="setting-info">
                         <label className="setting-label"><Icons.GitHub /> GitHub Repository</label>
                         <span className="setting-description">View source code, report issues, and contribute</span>

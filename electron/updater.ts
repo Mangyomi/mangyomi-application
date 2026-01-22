@@ -40,7 +40,7 @@ interface DownloadProgress {
 }
 
 const REPO_OWNER = 'Mangyomi';
-const REPO_NAME = 'mangyomi-app';
+const REPO_NAME = 'mangyomi-application';
 
 export class DifferentialUpdater {
     private mainWindow: BrowserWindow | null = null;
