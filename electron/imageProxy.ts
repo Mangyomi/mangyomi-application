@@ -1,4 +1,4 @@
-import { protocol, net } from 'electron';
+import { protocol, net, session } from 'electron';
 import { getExtension } from './extensions/loader';
 import { imageCache } from './cache/imageCache';
 
@@ -122,11 +122,15 @@ export function setupImageProxy() {
             } catch (cacheError) {
                 let response = await net.fetch(imageUrl, { headers });
 
+                // If 403, retry with extensions session that has Cloudflare cookies from browserFetch
                 if (response.status === 403) {
+                    console.log(`[ImageProxy] Got 403 for ${imageUrl}, retrying with extensions session...`);
                     const u = new URL(imageUrl);
                     const autoReferer = u.origin + '/';
                     const retryHeaders = { ...headers, 'Referer': autoReferer };
-                    response = await net.fetch(imageUrl, { headers: retryHeaders });
+                    const extensionsSession = session.fromPartition('persist:extensions');
+                    response = await extensionsSession.fetch(imageUrl, { headers: retryHeaders });
+                    console.log(`[ImageProxy] Extensions session retry status: ${response.status}`);
                 }
 
                 entry.status = response.status;

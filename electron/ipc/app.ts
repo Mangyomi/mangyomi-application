@@ -34,7 +34,6 @@ export function setupAppHandlers(mainWindow: BrowserWindow) {
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
 
     differentialUpdater.setMainWindow(mainWindow);
-    differentialUpdater.initializeCache(pkg.version);
 
     ipcMain.handle('app:getVersion', () => {
         return pkg.version;

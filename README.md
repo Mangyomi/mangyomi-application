@@ -2,6 +2,10 @@
 
 A Tachiyomi-style manga reader desktop application built with Electron and React.
 
+**Supported Platforms:** Windows, Linux
+
+**Support:** Join our [Discord server](https://discord.gg/HnGBh5zkuh) for bug reports and support queries.
+
 ## Disclaimer
 
 Mangyomi is a **manga reading application** that provides a platform for browsing and reading manga through third-party extensions.
@@ -23,25 +27,145 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 **[📸 View Full Showcase](./SHOWCASE.md)**
 
-## Features
+---
 
-- 📚 **Library Management** - Organize your manga collection with tags and categories
-- 🔍 **Browse Sources** - Search and discover manga from multiple sources via extensions
-- 📖 **Chapter Reader** - Smooth reading experience with vertical scroll and page modes
-- 📜 **Reading History** - Track your reading progress with lazy loading for large histories
-- 📉 **Tracking** - Automatically sync reading progress with AniList
-- 🎮 **Discord RPC** - Show your current reading activity on Discord with rich presence
-- 📥 **Downloads** - Download chapters for offline reading
-- 🏷️ **Tags** - Organize manga with custom colored tags
-- 🔌 **Extension System** - Install extensions directly from GitHub repositories
-- 📦 **Tachiyomi Import** - Restore your library from Tachiyomi/Mihon backup files
-- ⚡ **Virtualized UI** - Smooth performance for large libraries and histories
-- ⚙️ **Settings** - Customize theme, reading preferences, and privacy options
-- 🚀 **Smart Prefetching** - Progressive streaming downloads images as URLs are discovered
+## ✨ Features
 
-## Installing Extensions
+### 📚 Library Management
+Organize your manga collection with custom tags and categories. Add manga to your library, track reading progress, and filter by status.
 
-Mangyomi supports installing extensions directly from GitHub:
+![Library View](./docs/library_view.png)
+
+### 🔍 Browse & Search
+Discover manga from multiple sources via extensions. Switch between Popular and Latest tabs, apply advanced filters, and search across all enabled sources.
+
+![Browse View](./docs/browse_view.png)
+
+### 📖 Chapter Reader
+Smooth reading experience with two reading modes:
+- **Vertical Scroll** - Continuous scrolling for webtoons and long-strip manga
+- **Horizontal Pages** - Page-by-page navigation for traditional manga
+
+![Reader Vertical](./docs/reader_vertical.png)
+![Reader Horizontal](./docs/reader_horizontal.png)
+
+### 📜 Reading History
+Track your reading progress across all manga with lazy loading for large histories. Filter by source and search through your reading history.
+
+![History View](./docs/history_view.png)
+
+### 📥 Downloads
+Download chapters for offline reading. Manage your downloads queue and view download progress.
+
+![Downloads View](./docs/downloads_view.png)
+
+### 🏷️ Tags
+Organize manga with custom colored tags for easy categorization. Bulk tag management and tag-based filtering.
+
+![Tags View](./docs/tags_view.png)
+
+### 🔌 Extension System
+Install extensions directly from GitHub repositories. Enable, disable, or uninstall extensions as needed. Search through available and installed extensions.
+
+![Extensions View](./docs/extensions_view.png)
+
+### 🔒 Extension Sandbox
+Extensions run in isolated sandboxed environments for security:
+- **Isolated Execution**: Each extension runs in its own sandboxed BrowserWindow with no access to Node.js APIs
+- **Domain Whitelisting**: Extensions can only fetch from domains declared in their manifest
+- **No System Access**: Dangerous globals like `require`, `process`, `Buffer`, and `fs` are blocked
+- **Shared Session**: Cloudflare cookies are shared across extensions for seamless challenge solving
+- **Auto Cleanup**: Idle sandboxes are automatically destroyed after 5 minutes to save memory
+
+---
+
+## 🚀 Advanced Features
+
+### ⚡ Smart Prefetching
+Preload adjacent chapters (0-4) for faster navigation between chapters. Configure the number of chapters to prefetch based on your connection speed.
+
+### 🧠 Adaptive Prefetch (Beta)
+Machine learning-based prefetching that learns your reading speed and prefetches pages just before you need them. Respects source rate limits to avoid getting blocked.
+
+![Adaptive Prefetch](./docs/adaptive_prefetch.png)
+
+### 🌐 Network Proxies
+Configure HTTP/SOCKS4/SOCKS5 proxies for prefetch distribution. Requests are distributed randomly across your real IP and configured proxies with automatic fallback on failure.
+
+![Network Settings](./docs/network_settings.png)
+
+### 💾 Cache Management
+Configurable cache size limits (256MB-8GB). Option to bypass cache limits during bulk prefetch for offline reading.
+
+![Storage Settings](./docs/storage_settings.png)
+
+---
+
+## 🔗 Integrations
+
+### 📉 AniList Tracking
+Sync your reading progress automatically with AniList:
+- **Two-way Sync**: Updates your AniList profile as you read
+- **Status Updates**: Automatically changes status to "Reading" or "Completed"
+
+![AniList Tracking](./docs/manga_anilist_tracking.png)
+
+### 🎮 Discord Rich Presence
+Show your current reading activity on Discord with rich presence:
+- **Rich Details**: Shows manga title, current chapter, and source
+- **Privacy Controls**: Hide NSFW content from your status
+- **Strict Mode**: Treat all content from NSFW-tagged extensions as sensitive
+- **Incognito**: Toggle RPC globally
+
+![Discord RPC](./docs/manga_settings_discord.png)
+
+### 📦 Tachiyomi/Mihon Import
+Restore your library from Tachiyomi/Mihon backup files (.tachibk, .proto.gz). Selective import with options for:
+- Manga library
+- Chapter progress
+- Reading history
+
+![Import Settings](./docs/import_settings.png)
+
+---
+
+## ⚙️ Settings
+
+### General
+- Theme selection (Light, Dark, System)
+
+### Library  
+- NSFW content filtering (Global, Library, History, Tags)
+
+### Reader
+- Default reading mode
+- Chapter prefetch settings
+- Adaptive prefetch toggle
+
+### Storage
+- Cache size limits
+- Clear cache option
+
+### Network
+- Proxy configuration
+
+### Tracking
+- AniList connection
+
+### Discord
+- Rich Presence toggle
+- NSFW privacy settings
+
+### Advanced
+- Log level configuration
+- Debug log generation
+- Developer mode (extension sideloading)
+- Memory monitor
+- GPU status management
+
+---
+
+## 🛠️ Installing Extensions
 
 1. Go to **Extensions** in the sidebar
 2. Enter a GitHub repository URL (e.g., `github.com/username/mangyomi-extensions`)
@@ -50,10 +174,6 @@ Mangyomi supports installing extensions directly from GitHub:
 5. Toggle extensions on/off or uninstall as needed
 
 ### Extension Repository Format
-
-Extension repositories should contain folders, each with:
-- `manifest.json` - Extension metadata
-- `index.js` - Extension implementation
 
 ```
 my-extensions-repo/
@@ -65,134 +185,9 @@ my-extensions-repo/
 │   └── index.js
 ```
 
-## 🎮 Discord Rich Presence
+---
 
-Mangyomi integrates with Discord to display your reading status:
-
-- **Rich Details**: Shows Manga title, current chapter, and source extension.
-- **Privacy Controls**:
-  - **Hide NSFW**: Option to automatically hide status when reading NSFW content.
-  - **Strict Mode**: Treat all content from NSFW-tagged extensions as sensitive.
-  - **Incognito**: Toggle RPC on/off globally.
-- **Interactive**: Buttons to view the manga on AniList or viewing the project on GitHub.
-
-![Discord RPC](./docs/manga_settings_discord.png)
-
-## 📉 Tracking (AniList)
-
-Sync your reading progress automatically:
-
-- **Two-way Sync**: Updates your AniList profile as you read.
-- **Status Updates**: Automatically changes status to "Reading" or "Completed".
-- **Score Tracking**: Update your score directly from the app (Work in Progress).
-
-![AniList Tracking](./docs/manga_anilist_tracking.png)
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-
-### Development
-
-```bash
-git clone https://github.com/Mangyomi/mangyomi-app.git
-cd mangyomi
-npm install
-npm run dev
-```
-
-### Building
-
-```bash
-npm run electron:build
-```
-
-## Extension Development
-
-### manifest.json
-
-```json
-{
-  "id": "your-extension",
-  "name": "Your Extension",
-  "version": "1.0.0",
-  "baseUrl": "https://example.com",
-  "language": "en",
-  "nsfw": false
-}
-```
-
-### Extension API
-
-```javascript
-module.exports = {
-  getImageHeaders() {
-    return { 'Referer': 'https://example.com/' };
-  },
-
-  async getPopularManga(page) {
-    return { manga: [...], hasNextPage: true };
-  },
-
-  async getLatestManga(page) {
-    return { manga: [...], hasNextPage: true };
-  },
-
-  async searchManga(query, page) {
-    return { manga: [...], hasNextPage: true };
-  },
-
-  async getMangaDetails(mangaId) {
-    return { id, title, coverUrl, author, description, status, genres };
-  },
-
-  async getChapterList(mangaId) {
-    return [{ id, title, chapterNumber, url }];
-  },
-
-  async getChapterPages(chapterId) {
-    return ['https://...'];
-  },
-
-  // Optional: Streaming API for progressive page loading
-  async getChapterPagesStreaming(chapterId) {
-    // Fetch pages in batches and send progressively
-    const pages = [];
-    for (let batch = 0; batch < totalBatches; batch++) {
-      // Check if user cancelled (e.g., left the reader)
-      if (isStreamingCancelled()) {
-        console.log('Streaming cancelled by user');
-        return pages;
-      }
-      
-      const batchPages = await fetchBatch(batch);
-      pages.push(...batchPages);
-      
-      // Send progress to UI (pages load as they're discovered)
-      sendStreamingPages(pages, false); // false = not done yet
-    }
-    
-    sendStreamingPages(pages, true); // true = done
-    return pages;
-  }
-};
-```
-
-### Available Global Functions
-
-Extensions have access to these globals in the sandbox:
-
-| Function | Description |
-|----------|-------------|
-| `browserFetch(url)` | Fetch with browser cookies (for sites requiring auth) |
-| `serverFetch(url, options)` | Standard fetch (faster, no cookies) |
-| `sendStreamingPages(pages, done)` | Send page URLs progressively to the reader |
-| `isStreamingCancelled()` | Check if user left reader (stop background fetching) |
-
-## Tech Stack
+## 💻 Tech Stack
 
 ### Main Application
 - **Electron** - Desktop framework
@@ -206,12 +201,37 @@ Extensions have access to these globals in the sandbox:
 - **7-Zip SFX** - Self-extracting portable package
 - **React** - Installer UI
 
-## License
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+
+### Development
+
+```bash
+git clone https://github.com/Mangyomi/mangyomi-application.git
+cd mangyomi
+npm install
+npm run dev
+```
+
+### Building
+
+```bash
+npm run electron:build
+```
+
+---
+
+## 📄 License
 
 GNU General Public License v3.0
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
 - Inspired by [Tachiyomi](https://tachiyomi.org/)
 - Built with [Electron](https://www.electronjs.org/) and [React](https://reactjs.org/)
-

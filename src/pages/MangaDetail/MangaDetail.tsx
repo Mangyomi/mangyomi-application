@@ -12,6 +12,7 @@ import TagSelector from '../../components/TagSelector';
 import AniListLinkModal from '../../components/AniListLinkModal/AniListLinkModal';
 import { Icons } from '../../components/Icons';
 import Tooltip from '../../components/Tooltip';
+import CloudflareImage from '../../components/CloudflareImage';
 
 function MangaDetail() {
     const { extensionId, mangaId } = useParams<{ extensionId: string; mangaId: string }>();
@@ -375,13 +376,18 @@ function MangaDetail() {
                 )}
 
                 <div className="manga-hero-content">
-                    <img
-                        src={proxiedCoverUrl}
-                        alt={currentManga.title}
-                        className="manga-cover"
+                    <div
+                        style={{ width: '200px', height: '280px', flexShrink: 0, cursor: 'pointer' }}
                         onClick={() => setIsImageZoomed(true)}
-                        style={{ cursor: 'pointer' }}
-                    />
+                        title="Click to enlarge"
+                    >
+                        <CloudflareImage
+                            src={proxiedCoverUrl}
+                            originalSrc={currentManga.coverUrl}
+                            alt={currentManga.title}
+                            className="manga-cover"
+                        />
+                    </div>
                     <div className="manga-info">
                         <h1 className="manga-title">{currentManga.title}</h1>
                         <p className="manga-author">
@@ -637,18 +643,23 @@ function MangaDetail() {
                         padding: '20px'
                     }}
                 >
-                    <img
-                        src={proxiedCoverUrl}
-                        alt={currentManga.title}
+                    <div
                         onClick={(e) => e.stopPropagation()}
                         style={{
                             maxWidth: '90vw',
                             maxHeight: '90vh',
-                            objectFit: 'contain',
                             borderRadius: '8px',
-                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
+                            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                            overflow: 'hidden'
                         }}
-                    />
+                    >
+                        <CloudflareImage
+                            src={proxiedCoverUrl}
+                            originalSrc={currentManga.coverUrl}
+                            alt={currentManga.title}
+                            className="manga-cover-zoomed"
+                        />
+                    </div>
                 </div>
             )}
         </div >

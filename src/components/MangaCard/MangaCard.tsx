@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icons } from '../Icons';
+import CloudflareImage from '../CloudflareImage';
 import './MangaCard.css';
 
 interface MangaCardProps {
@@ -55,10 +56,10 @@ function MangaCard({ id, title, coverUrl, extensionId, index = 0, inLibrary, tot
         >
             <div className="manga-card-cover">
                 {!imageError && proxiedCoverUrl ? (
-                    <img
+                    <CloudflareImage
                         src={proxiedCoverUrl}
+                        originalSrc={coverUrl}
                         alt={title}
-                        loading="lazy"
                         onError={() => setImageError(true)}
                     />
                 ) : (

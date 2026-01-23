@@ -45,10 +45,9 @@ const REPO_NAME = 'mangyomi-application';
 export class DifferentialUpdater {
     private mainWindow: BrowserWindow | null = null;
     private downloadedUpdatePath: string | null = null;
-    private blockmapCacheDir: string;
 
     constructor() {
-        this.blockmapCacheDir = path.join(app.getPath('userData'), 'update-cache');
+        // No initialization needed
     }
 
     // Write debug info to a file for production diagnosis
@@ -88,32 +87,7 @@ export class DifferentialUpdater {
         return path.dirname(app.getPath('exe'));
     }
 
-    private ensureCacheDir() {
-        if (!fs.existsSync(this.blockmapCacheDir)) {
-            fs.mkdirSync(this.blockmapCacheDir, { recursive: true });
-        }
-    }
 
-    private getCachedBlockmapPath(version: string): string {
-        return path.join(this.blockmapCacheDir, `${version}.blockmap`);
-    }
-
-    private getCachedInstallerPath(version: string): string {
-        return path.join(this.blockmapCacheDir, `${version}.exe`);
-    }
-
-    async cacheCurrentVersion(version: string) {
-        this.ensureCacheDir();
-        const exePath = app.getPath('exe');
-        const installerDir = path.dirname(exePath);
-
-        // Look for blockmap file from current installation
-        // The blockmap should have been cached during installation
-        const cachedBlockmap = this.getCachedBlockmapPath(version);
-        if (!fs.existsSync(cachedBlockmap)) {
-            console.log(`[Updater] No cached blockmap for version ${version}`);
-        }
-    }
 
     private parseBlockmap(data: Buffer): Blockmap {
         try {
@@ -428,121 +402,9 @@ export class DifferentialUpdater {
             const filePath = path.join(tempDir, fileName);
             let isDifferential = false;
 
-            // Debug logging for differential download check
+            // Debug logging
             this.debugLog(`downloadUpdate called - blockmapUrl: ${blockmapUrl ? 'present' : 'NULL'}, currentVersion: ${currentVersion || 'undefined'}, targetVersion: ${targetVersion || 'undefined'}`);
 
-            // Try differential download if we have blockmap URL and cached old version
-            if (blockmapUrl && currentVersion) {
-                const cachedOldBlockmap = this.getCachedBlockmapPath(currentVersion);
-                const cachedOldInstaller = this.getCachedInstallerPath(currentVersion);
-
-                this.debugLog(`Checking cache files - blockmap: ${cachedOldBlockmap}, exists: ${fs.existsSync(cachedOldBlockmap)}`);
-                this.debugLog(`Checking cache files - installer: ${cachedOldInstaller}, exists: ${fs.existsSync(cachedOldInstaller)}`);
-
-                if (fs.existsSync(cachedOldBlockmap) && fs.existsSync(cachedOldInstaller)) {
-                    try {
-                        this.debugLog('Attempting differential download...');
-                        console.log('[Updater] Attempting differential download...');
-
-                        // Fetch new blockmap
-                        const newBlockmapData = await this.fetchBuffer(blockmapUrl);
-                        const newBlockmap = this.parseBlockmap(newBlockmapData);
-
-                        // Load old blockmap
-                        const oldBlockmapData = fs.readFileSync(cachedOldBlockmap);
-                        const oldBlockmap = this.parseBlockmap(oldBlockmapData);
-
-                        // Calculate which blocks changed
-                        const { changedBlocks, unchangedBlocks } = this.calculateBlockRanges(oldBlockmap, newBlockmap);
-
-                        if (changedBlocks.length === 0) {
-                            console.log('[Updater] No blocks changed, nothing to download');
-                            return { success: true, filePath: cachedOldInstaller, isDifferential: true };
-                        }
-
-                        const totalChangedBytes = changedBlocks.reduce((sum, b) => sum + b.size, 0);
-                        const totalBytes = changedBlocks.reduce((sum, b) => sum + b.size, 0) +
-                            unchangedBlocks.reduce((sum, b) => sum + b.size, 0);
-
-                        console.log(`[Updater] Differential: ${changedBlocks.length} blocks changed (${Math.round(totalChangedBytes / 1024 / 1024)}MB of ${Math.round(totalBytes / 1024 / 1024)}MB)`);
-
-                        // Read old installer
-                        const oldInstaller = fs.readFileSync(cachedOldInstaller);
-
-                        // Create new file buffer
-                        const newFile = Buffer.alloc(totalBytes);
-                        let downloadedBytes = 0;
-
-                        // Copy unchanged blocks from old file
-                        for (const block of unchangedBlocks) {
-                            if (block.offset + block.size <= oldInstaller.length) {
-                                oldInstaller.copy(newFile, block.offset, block.offset, block.offset + block.size);
-                            }
-                        }
-
-                        // Download changed blocks in parallel batches for speed
-                        const PARALLEL_CONNECTIONS = 4;
-                        for (let i = 0; i < changedBlocks.length; i += PARALLEL_CONNECTIONS) {
-                            const batch = changedBlocks.slice(i, i + PARALLEL_CONNECTIONS);
-
-                            // Download batch in parallel
-                            const results = await Promise.all(
-                                batch.map(async (block) => {
-                                    const blockData = await this.fetchWithRange(
-                                        downloadUrl,
-                                        block.offset,
-                                        block.offset + block.size - 1
-                                    );
-                                    return { block, data: blockData };
-                                })
-                            );
-
-                            // Copy all batch results to the new file buffer
-                            for (const { block, data } of results) {
-                                data.copy(newFile, block.offset);
-                                downloadedBytes += block.size;
-                            }
-
-                            // Report progress after each batch
-                            this.sendProgress('update:downloadProgress', {
-                                percent: Math.round((downloadedBytes / totalChangedBytes) * 100),
-                                bytesDownloaded: downloadedBytes,
-                                totalBytes: totalChangedBytes,
-                                isDifferential: true
-                            } as DownloadProgress);
-                        }
-
-                        // Write the reconstructed file
-                        fs.writeFileSync(filePath, newFile);
-                        this.downloadedUpdatePath = filePath;
-                        isDifferential = true;
-
-                        // Cache the new blockmap and installer for future updates
-                        this.ensureCacheDir();
-                        if (targetVersion) {
-                            fs.writeFileSync(this.getCachedBlockmapPath(targetVersion), newBlockmapData);
-                            fs.copyFileSync(filePath, this.getCachedInstallerPath(targetVersion));
-                            console.log(`[Updater] Cached differential update for version: ${targetVersion}`);
-                        }
-
-                        this.sendProgress('update:downloadComplete', {
-                            success: true,
-                            filePath,
-                            isDifferential: true
-                        });
-
-                        console.log(`[Updater] Differential download complete! Downloaded ${Math.round(totalChangedBytes / 1024 / 1024)}MB instead of ${Math.round(totalBytes / 1024 / 1024)}MB`);
-                        return { success: true, filePath, isDifferential: true };
-
-                    } catch (diffError) {
-                        this.debugLog(`Differential download failed: ${diffError instanceof Error ? diffError.message : String(diffError)}`);
-                        console.warn('[Updater] Differential download failed, falling back to full download:', diffError);
-                    }
-                } else {
-                    this.debugLog('No cached version available for differential download');
-                    console.log('[Updater] No cached version available for differential download, performing full download');
-                }
-            }
 
             // Full download fallback
             console.log('[Updater] Performing full download...');
@@ -597,26 +459,7 @@ export class DifferentialUpdater {
             fs.writeFileSync(filePath, Buffer.from(allChunks));
             this.downloadedUpdatePath = filePath;
 
-            // Cache this installer and its blockmap for future differential updates
-            this.debugLog(`Cache check - blockmapUrl: ${blockmapUrl ? 'present' : 'NULL'}, targetVersion: ${targetVersion || 'undefined'}`);
-            if (blockmapUrl && targetVersion) {
-                try {
-                    this.ensureCacheDir();
-                    this.debugLog(`Fetching blockmap from: ${blockmapUrl}`);
-                    const blockmapData = await this.fetchBuffer(blockmapUrl);
-                    const blockmapPath = this.getCachedBlockmapPath(targetVersion);
-                    const installerPath = this.getCachedInstallerPath(targetVersion);
-                    this.debugLog(`Writing blockmap to: ${blockmapPath}`);
-                    fs.writeFileSync(blockmapPath, blockmapData);
-                    this.debugLog(`Copying installer to: ${installerPath}`);
-                    fs.copyFileSync(filePath, installerPath);
-                    this.debugLog(`SUCCESS: Cached installer and blockmap for version: ${targetVersion}`);
-                } catch (cacheError) {
-                    this.debugLog(`CACHE ERROR: ${cacheError instanceof Error ? cacheError.message : String(cacheError)}`);
-                }
-            } else {
-                this.debugLog(`SKIPPED: Caching skipped due to missing blockmapUrl or targetVersion`);
-            }
+
 
             this.sendProgress('update:downloadComplete', {
                 success: true,
@@ -759,23 +602,7 @@ export class DifferentialUpdater {
         return this.downloadedUpdatePath;
     }
 
-    // Initialize cache with current version on app start
-    async initializeCache(currentVersion: string) {
-        this.ensureCacheDir();
 
-        // Check if we already have this version cached
-        const cachedBlockmap = this.getCachedBlockmapPath(currentVersion);
-        const cachedInstaller = this.getCachedInstallerPath(currentVersion);
-
-        if (!fs.existsSync(cachedInstaller)) {
-            // Cache the currently running installer for future differential updates
-            // The installer path should be in the user's temp from original installation
-            // or we can look for it in common locations
-            console.log(`[Updater] Current version ${currentVersion} not cached. First update will be full download, subsequent will be differential.`);
-        } else {
-            console.log(`[Updater] Version ${currentVersion} already cached for differential updates`);
-        }
-    }
 }
 
 export const differentialUpdater = new DifferentialUpdater();

@@ -1,6 +1,6 @@
 {
   "name": "mangyomi",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Mangyomi - Manga Reader",
   "main": "dist-electron/main.js",
   "license": "GPL-3.0",

@@ -351,8 +351,26 @@ class ImageCache {
         const db = getDatabase();
 
         try {
-            const response = await net.fetch(url, { headers });
-            if (!response.ok) throw new Error(`Failed to fetch ${url}: ${response.status}`);
+            // Try net.fetch first
+            let response = await net.fetch(url, { headers });
+
+            // If 403, retry with extensions session to share Cloudflare cookies from browserFetch
+            if (response.status === 403) {
+                console.log(`[ImageCache] Cover fetch got 403; retrying with extensions session: ${url}`);
+                const extensionsSession = session.fromPartition('persist:extensions');
+                response = await extensionsSession.fetch(url, {
+                    headers: {
+                        ...headers,
+                        'Referer': new URL(url).origin + '/',
+                    }
+                });
+                console.log(`[ImageCache] Extensions session retry result: ${response.status}`);
+            }
+
+            if (!response.ok) {
+                console.log(`[ImageCache] Cover fetch failed with status ${response.status} for: ${url}`);
+                throw new Error(`Failed to fetch ${url}: ${response.status}`);
+            }
 
             const buffer = await response.arrayBuffer();
             const originalData = Buffer.from(buffer);

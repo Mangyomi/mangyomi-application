@@ -448,39 +448,53 @@ export function setupDatabaseHandlers(deps: DatabaseHandlerDependencies) {
 
     ipcMain.handle('db:saveReadingProgress', async (_, manga: any, chapter: any, pageNumber: number) => {
         const transaction = db.transaction(() => {
+            // First, ensure manga exists - use INSERT OR REPLACE to handle partial data
+            // This allows progress tracking for manga not in library
             const mangaStmt = db.prepare(`
-                INSERT OR IGNORE INTO manga (id, source_id, source_manga_id, title, cover_url, author, artist, description, status)
-                VALUES (@id, @source_id, @source_manga_id, @title, @cover_url, @author, @artist, @description, @status)
+                INSERT INTO manga (id, source_id, source_manga_id, title, cover_url, author, artist, description, status, in_library)
+                VALUES (@id, @source_id, @source_manga_id, @title, @cover_url, @author, @artist, @description, @status, 0)
+                ON CONFLICT(id) DO UPDATE SET
+                    title = COALESCE(excluded.title, title),
+                    cover_url = COALESCE(excluded.cover_url, cover_url),
+                    author = COALESCE(excluded.author, author),
+                    description = COALESCE(excluded.description, description),
+                    updated_at = strftime('%s', 'now')
             `);
             mangaStmt.run({
                 id: manga.id,
-                source_id: manga.source_id,
-                source_manga_id: manga.source_manga_id,
-                title: manga.title,
-                cover_url: manga.cover_url,
-                author: manga.author,
-                artist: manga.artist,
-                description: manga.description,
-                status: manga.status
+                source_id: manga.source_id || manga.extensionId || 'unknown',
+                source_manga_id: manga.source_manga_id || manga.id?.split(':')[1] || 'unknown',
+                title: manga.title || 'Unknown',
+                cover_url: manga.cover_url || manga.coverUrl || null,
+                author: manga.author || null,
+                artist: manga.artist || null,
+                description: manga.description || null,
+                status: manga.status || null
             });
 
+            // Then ensure chapter exists  
             const chapterStmt = db.prepare(`
-                INSERT OR IGNORE INTO chapter (id, manga_id, source_chapter_id, title, chapter_number, volume_number, url)
+                INSERT INTO chapter (id, manga_id, source_chapter_id, title, chapter_number, volume_number, url)
                 VALUES (@id, @manga_id, @source_chapter_id, @title, @chapter_number, @volume_number, @url)
+                ON CONFLICT(id) DO UPDATE SET
+                    title = COALESCE(excluded.title, title),
+                    chapter_number = COALESCE(excluded.chapter_number, chapter_number)
             `);
             chapterStmt.run({
                 id: chapter.id,
                 manga_id: manga.id,
-                source_chapter_id: chapter.source_chapter_id,
-                title: chapter.title,
-                chapter_number: chapter.chapter_number,
-                volume_number: chapter.volume_number,
-                url: chapter.url
+                source_chapter_id: chapter.source_chapter_id || chapter.id?.split(':')[2] || 'unknown',
+                title: chapter.title || `Chapter ${chapter.chapter_number || '?'}`,
+                chapter_number: chapter.chapter_number || chapter.chapterNumber || 0,
+                volume_number: chapter.volume_number || null,
+                url: chapter.url || ''
             });
 
+            // Update chapter read status
             db.prepare(`UPDATE chapter SET read_at = strftime('%s', 'now'), last_page_read = ? WHERE id = ?`)
                 .run(pageNumber, chapter.id);
 
+            // Update history - keep only one entry per manga
             const lastEntry = db.prepare('SELECT id, chapter_id FROM history ORDER BY read_at DESC LIMIT 1').get() as any;
 
             if (lastEntry && lastEntry.chapter_id === chapter.id) {

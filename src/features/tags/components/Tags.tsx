@@ -226,8 +226,8 @@ function Tags() {
             <div className="tags-page">
                 <div className="page-header">
                     <div className="header-left">
-                        <button className="btn btn-ghost" onClick={handleBack}>
-                            ← Back
+                        <button className="btn btn-ghost" onClick={handleBack} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Icons.ArrowLeft width={18} height={18} /> Back
                         </button>
                         <div>
                             <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
