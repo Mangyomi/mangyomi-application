@@ -4,7 +4,7 @@ A Tachiyomi-style manga reader desktop application built with Electron and React
 
 **Supported Platforms:** Windows, Linux
 
-**Support:** Join our [Discord server](https://discord.gg/HnGBh5zkuh) for bug reports and support queries.
+**Support:** Join our [Discord server](https://discord.gg/7jZnh43h) for bug reports and support queries.
 
 ## Disclaimer
 
