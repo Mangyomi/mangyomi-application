@@ -17,6 +17,13 @@ interface SettingsSchema {
     discordRpcHideNsfw: boolean;
     discordRpcStrictNsfw: boolean;
     developerMode: boolean;
+    windowBounds?: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        isMaximized: boolean;
+    };
 }
 
 const schema = {
@@ -90,6 +97,17 @@ const schema = {
     developerMode: {
         type: 'boolean',
         default: false
+    },
+    windowBounds: {
+        type: 'object',
+        properties: {
+            x: { type: 'number' },
+            y: { type: 'number' },
+            width: { type: 'number', minimum: 1000 },
+            height: { type: 'number', minimum: 700 },
+            isMaximized: { type: 'boolean' }
+        },
+        default: undefined
     }
 } as const;
 

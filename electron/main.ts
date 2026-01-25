@@ -6,6 +6,7 @@ import { initDatabase, getDatabase } from './database';
 import { loadExtensions } from './extensions/loader';
 import { connect as connectDiscord, disconnect as disconnectDiscord } from './discord';
 import { destroyAllSandboxes } from './extensions/sandbox/sandboxRunner';
+import { getSetting, setSetting } from './store';
 
 // GPU failure auto-recovery system
 const gpuFlagPath = path.join(app.getPath('userData'), 'gpu-disabled.flag');
@@ -102,9 +103,27 @@ function createWindow() {
     const iconName = isNightly ? 'icon-nightly.png' : 'icon.png';
     const iconPath = path.join(__dirname, '../build', iconName);
 
-    mainWindow = new BrowserWindow({
+    // Load saved window bounds from store
+    const savedBounds = getSetting('windowBounds');
+
+    // Default bounds
+    let windowBounds = {
         width: 1400,
         height: 900,
+        x: undefined as number | undefined,
+        y: undefined as number | undefined,
+    };
+
+    // Apply saved bounds if available and valid
+    if (savedBounds) {
+        windowBounds.width = savedBounds.width;
+        windowBounds.height = savedBounds.height;
+        windowBounds.x = savedBounds.x;
+        windowBounds.y = savedBounds.y;
+    }
+
+    mainWindow = new BrowserWindow({
+        ...windowBounds,
         minWidth: 1000,
         minHeight: 700,
         icon: iconPath,
@@ -120,6 +139,37 @@ function createWindow() {
         backgroundColor: '#0f0f0f',
         show: false,
     });
+
+    // Restore maximized state if it was maximized when closed
+    if (savedBounds?.isMaximized) {
+        mainWindow.maximize();
+    }
+
+    // Debounced function to save window bounds
+    let saveBoundsTimeout: NodeJS.Timeout | null = null;
+    const saveWindowBounds = () => {
+        if (saveBoundsTimeout) clearTimeout(saveBoundsTimeout);
+        saveBoundsTimeout = setTimeout(() => {
+            if (!mainWindow || mainWindow.isDestroyed()) return;
+
+            const bounds = mainWindow.getBounds();
+            const isMaximized = mainWindow.isMaximized();
+
+            setSetting('windowBounds', {
+                x: bounds.x,
+                y: bounds.y,
+                width: bounds.width,
+                height: bounds.height,
+                isMaximized,
+            });
+        }, 500); // Debounce for 500ms
+    };
+
+    // Listen to window events and save bounds
+    mainWindow.on('resize', saveWindowBounds);
+    mainWindow.on('move', saveWindowBounds);
+    mainWindow.on('maximize', saveWindowBounds);
+    mainWindow.on('unmaximize', saveWindowBounds);
 
     // Window control handlers
     ipcMain.handle('window:minimize', () => mainWindow?.minimize());
