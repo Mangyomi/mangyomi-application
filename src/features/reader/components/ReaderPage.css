@@ -37,24 +37,44 @@
     left: 0;
     right: 0;
     display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
+    flex-direction: column;
+    gap: 8px;
     padding: var(--spacing-md) var(--spacing-lg);
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9), transparent);
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 70%, transparent 100%);
 }
 
-.reader-title-container {
+.reader-header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+}
+
+.reader-header-center {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 2px;
-    z-index: 2000;
+    gap: var(--spacing-sm);
+    pointer-events: none;
+}
+
+.reader-header-center>* {
+    pointer-events: auto;
+}
+
+.reader-title-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    pointer-events: none;
 }
 
 .chapter-select-btn {
+    pointer-events: auto;
+    /* Re-enable clicks on the button itself */
     background: transparent;
     border: none;
     color: var(--color-text-primary);
@@ -65,12 +85,19 @@
     gap: 6px;
     cursor: pointer;
     padding: 2px 8px;
-    /* Reduced vertical padding */
     border-radius: 12px;
-    /* Pill shape */
     transition: all 0.2s ease;
     opacity: 0.9;
-    /* Slightly distinct from page count */
+    max-width: 100%;
+    min-width: 0;
+}
+
+.chapter-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 500px;
+    /* More space since it's on its own line */
 }
 
 .chapter-select-btn:hover {
@@ -252,14 +279,30 @@
 .reader-nav-actions,
 .reader-options,
 .reader-zoom-controls,
-.reader-mode-controls {
+.reader-mode-controls,
+.reader-control-group {
     display: flex;
-    gap: var(--spacing-xs);
+    gap: 4px;
+    /* Reduced from var(--spacing-xs) for more compact layout */
     align-items: center;
 }
 
 .reader-options {
-    gap: var(--spacing-lg);
+    gap: var(--spacing-sm);
+    /* Reduced from spacing-md */
+    flex-shrink: 0;
+}
+
+.reader-control-group {
+    position: relative;
+}
+
+.reader-control-divider {
+    width: 1px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 2px;
+    /* Reduced from 4px */
 }
 
 .btn-text {
@@ -271,6 +314,51 @@
 .reader-options .btn-icon.active {
     background: var(--color-accent-muted);
     color: var(--color-accent);
+}
+
+/* Open In Dropdown */
+.open-in-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: rgba(18, 18, 18, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    min-width: 220px;
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: dropdownSlide 0.2s ease-out;
+    z-index: 2001;
+}
+
+.open-in-option {
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    color: var(--color-text-secondary);
+    font-size: 14px;
+}
+
+.open-in-option:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-text-primary);
+}
+
+.open-in-option:not(:last-child) {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.open-in-icon {
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
 }
 
 /* Sidebar Progress */

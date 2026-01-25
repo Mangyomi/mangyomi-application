@@ -63,8 +63,10 @@ function ReaderPage() {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [showChapterSelect, setShowChapterSelect] = useState(false);
+    const [showOpenInMenu, setShowOpenInMenu] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const openInMenuRef = useRef<HTMLDivElement>(null);
 
     const chapterId = decodeURIComponent(chapterIdParam || '');
     const locationState = location.state as { mangaId?: string; mangaTitle?: string } | null;
@@ -319,6 +321,22 @@ function ReaderPage() {
         }
     };
 
+    const handleOpenInDefaultBrowser = () => {
+        const currentChapter = currentChapters.find(c => c.id === chapterId);
+        if (currentChapter?.url) {
+            window.electronAPI.app.openExternal(currentChapter.url);
+            setShowOpenInMenu(false);
+        }
+    };
+
+    const handleOpenInAppBrowser = () => {
+        const currentChapter = currentChapters.find(c => c.id === chapterId);
+        if (currentChapter?.url) {
+            window.electronAPI.app.openInAppBrowser(currentChapter.url);
+            setShowOpenInMenu(false);
+        }
+    };
+
     // Scroll Handler
     const handleScroll = useCallback(() => {
         if (!containerRef.current || readerMode !== 'vertical') return;
@@ -406,21 +424,26 @@ function ReaderPage() {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setShowChapterSelect(false);
             }
+            if (openInMenuRef.current && !openInMenuRef.current.contains(event.target as Node)) {
+                setShowOpenInMenu(false);
+            }
         };
 
-        if (showChapterSelect) {
+        if (showChapterSelect || showOpenInMenu) {
             document.addEventListener('mousedown', handleClickOutside);
-            setTimeout(() => {
-                const activeOption = dropdownRef.current?.querySelector('.chapter-option.active');
-                if (activeOption) {
-                    activeOption.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                }
-            }, 10);
+            if (showChapterSelect) {
+                setTimeout(() => {
+                    const activeOption = dropdownRef.current?.querySelector('.chapter-option.active');
+                    if (activeOption) {
+                        activeOption.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                    }
+                }, 10);
+            }
         }
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [showChapterSelect]);
+    }, [showChapterSelect, showOpenInMenu]);
 
     // F11 fullscreen toggle + init fullscreen state on mount
     useEffect(() => {
@@ -463,11 +486,170 @@ function ReaderPage() {
             {/* Controls Overlay */}
             <div className="reader-controls">
                 <div className="reader-header">
-                    <Tooltip content="Back" position="bottom">
-                        <button className="btn btn-ghost btn-icon" onClick={handleGoBack}>
-                            ←
-                        </button>
-                    </Tooltip>
+                    <div className="reader-header-top">
+                        <Tooltip content="Back" position="bottom">
+                            <button className="btn btn-ghost btn-icon" onClick={handleGoBack}>
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M10 12L6 8L10 4" />
+                                </svg>
+                            </button>
+                        </Tooltip>
+
+                        <div className="reader-header-center">
+                            {/* Navigation Controls */}
+                            <div className="reader-control-group">
+                                <Tooltip content="Previous Chapter" position="bottom">
+                                    <button
+                                        className="btn btn-ghost btn-icon"
+                                        onClick={handlePrevChapter}
+                                        disabled={!prevChapter}
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M10 4l-5 4 5 4V4z" />
+                                        </svg>
+                                    </button>
+                                </Tooltip>
+                                <Tooltip content="Next Chapter" position="bottom">
+                                    <button
+                                        className="btn btn-ghost btn-icon"
+                                        onClick={handleNextChapter}
+                                        disabled={!nextChapter}
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M6 4l5 4-5 4V4z" />
+                                        </svg>
+                                    </button>
+                                </Tooltip>
+                            </div>
+
+                            <div className="reader-control-divider"></div>
+
+                            {/* Open In Menu */}
+                            <div className="reader-control-group" ref={openInMenuRef}>
+                                <Tooltip content="Open in Browser" position="bottom">
+                                    <button
+                                        className={`btn btn-ghost btn-icon ${showOpenInMenu ? 'active' : ''}`}
+                                        onClick={() => setShowOpenInMenu(!showOpenInMenu)}
+                                        disabled={!currentChapters.find(c => c.id === chapterId)?.url}
+                                    >
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <circle cx="8" cy="8" r="6" />
+                                            <path d="M2 8h12M8 2a10 10 0 0 0 0 12M8 2a10 10 0 0 1 0 12" />
+                                        </svg>
+                                    </button>
+                                </Tooltip>
+
+                                {showOpenInMenu && (
+                                    <div className="open-in-dropdown">
+                                        <div
+                                            className="open-in-option"
+                                            onClick={handleOpenInDefaultBrowser}
+                                        >
+                                            <span className="open-in-icon">
+                                                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M7 3H3v10h10V9M10 2h4v4M14 2L8 8" />
+                                                </svg>
+                                            </span>
+                                            <span>Open in Default Browser</span>
+                                        </div>
+                                        <div
+                                            className="open-in-option"
+                                            onClick={handleOpenInAppBrowser}
+                                        >
+                                            <span className="open-in-icon">
+                                                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <rect x="4" y="2" width="8" height="12" rx="1" />
+                                                    <path d="M8 11h0" />
+                                                </svg>
+                                            </span>
+                                            <span>Open in In-App Browser</span>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="reader-control-divider"></div>
+
+                            {/* Zoom Controls */}
+                            <div className="reader-control-group reader-zoom-controls">
+                                <Tooltip content="Zoom Out" position="bottom">
+                                    <button className="btn btn-ghost btn-icon" onClick={handleZoomOut}>
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M4 8h8" />
+                                        </svg>
+                                    </button>
+                                </Tooltip>
+                                <Tooltip content="Reset Zoom" position="bottom">
+                                    <button className="btn btn-ghost btn-text" onClick={handleResetZoom}>
+                                        {Math.round(zoomLevel * 100)}%
+                                    </button>
+                                </Tooltip>
+                                <Tooltip content="Zoom In" position="bottom">
+                                    <button className="btn btn-ghost btn-icon" onClick={handleZoomIn}>
+                                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            <path d="M8 4v8M4 8h8" />
+                                        </svg>
+                                    </button>
+                                </Tooltip>
+                            </div>
+
+                            <div className="reader-control-divider"></div>
+
+                            {/* Reader Mode Controls */}
+                            <div className="reader-control-group reader-mode-controls">
+                                <Tooltip content="Vertical scroll" position="bottom">
+                                    <button
+                                        className={`btn btn-ghost btn-icon ${readerMode === 'vertical' ? 'active' : ''}`}
+                                        onClick={() => setReaderMode('vertical')}
+                                    >
+                                        ↕
+                                    </button>
+                                </Tooltip>
+                                <Tooltip content="Horizontal pages" position="bottom">
+                                    <button
+                                        className={`btn btn-ghost btn-icon ${readerMode === 'horizontal' ? 'active' : ''}`}
+                                        onClick={() => setReaderMode('horizontal')}
+                                    >
+                                        ↔
+                                    </button>
+                                </Tooltip>
+                            </div>
+
+                            <Tooltip content={isFullscreen ? "Exit Fullscreen (F11)" : "Fullscreen (F11)"} position="bottom">
+                                <button
+                                    className={`btn btn-ghost btn-icon ${isFullscreen ? 'active' : ''}`}
+                                    onClick={() => window.electronAPI.window.toggleFullscreen().then(setIsFullscreen)}
+                                >
+                                    {isFullscreen ? '⇲' : '⛶'}
+                                </button>
+                            </Tooltip>
+                        </div>
+
+                        {/* Window controls - always visible since TitleBar is hidden in reader */}
+                        <div className="reader-window-controls">
+                            <Tooltip content="Minimize" position="bottom">
+                                <button className="btn btn-ghost btn-icon" onClick={() => window.electronAPI.window.minimize()}>
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M3 8h10" />
+                                    </svg>
+                                </button>
+                            </Tooltip>
+                            <Tooltip content="Maximize" position="bottom">
+                                <button className="btn btn-ghost btn-icon" onClick={() => window.electronAPI.window.maximize()}>
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="3" y="3" width="10" height="10" />
+                                    </svg>
+                                </button>
+                            </Tooltip>
+                            <Tooltip content="Close" position="bottom">
+                                <button className="btn btn-ghost btn-icon reader-close-btn" onClick={() => window.electronAPI.window.close()}>
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M4 4l8 8M12 4l-8 8" />
+                                    </svg>
+                                </button>
+                            </Tooltip>
+                        </div>
+                    </div>
 
                     <div className="reader-title-container" ref={dropdownRef}>
                         <button
@@ -507,92 +689,6 @@ function ReaderPage() {
                                 </div>
                             </div>
                         )}
-                    </div>
-
-                    <div className="reader-nav-actions">
-                        <Tooltip content="Previous Chapter" position="bottom">
-                            <button
-                                className="btn btn-ghost btn-icon"
-                                onClick={handlePrevChapter}
-                                disabled={!prevChapter}
-                            >
-                                ⏮
-                            </button>
-                        </Tooltip>
-                        <Tooltip content="Next Chapter" position="bottom">
-                            <button
-                                className="btn btn-ghost btn-icon"
-                                onClick={handleNextChapter}
-                                disabled={!nextChapter}
-                            >
-                                ⏭
-                            </button>
-                        </Tooltip>
-                    </div>
-
-                    <div className="reader-options">
-                        <div className="reader-zoom-controls">
-                            <Tooltip content="Zoom Out" position="bottom">
-                                <button className="btn btn-ghost btn-icon" onClick={handleZoomOut}>
-                                    -
-                                </button>
-                            </Tooltip>
-                            <Tooltip content="Reset Zoom" position="bottom">
-                                <button className="btn btn-ghost btn-text" onClick={handleResetZoom}>
-                                    {Math.round(zoomLevel * 100)}%
-                                </button>
-                            </Tooltip>
-                            <Tooltip content="Zoom In" position="bottom">
-                                <button className="btn btn-ghost btn-icon" onClick={handleZoomIn}>
-                                    +
-                                </button>
-                            </Tooltip>
-                        </div>
-                        <div className="reader-mode-controls">
-                            <Tooltip content="Vertical scroll" position="bottom">
-                                <button
-                                    className={`btn btn-ghost btn-icon ${readerMode === 'vertical' ? 'active' : ''}`}
-                                    onClick={() => setReaderMode('vertical')}
-                                >
-                                    ↕
-                                </button>
-                            </Tooltip>
-                            <Tooltip content="Horizontal pages" position="bottom">
-                                <button
-                                    className={`btn btn-ghost btn-icon ${readerMode === 'horizontal' ? 'active' : ''}`}
-                                    onClick={() => setReaderMode('horizontal')}
-                                >
-                                    ↔
-                                </button>
-                            </Tooltip>
-                        </div>
-                        <Tooltip content={isFullscreen ? "Exit Fullscreen (F11)" : "Fullscreen (F11)"} position="bottom">
-                            <button
-                                className={`btn btn-ghost btn-icon ${isFullscreen ? 'active' : ''}`}
-                                onClick={() => window.electronAPI.window.toggleFullscreen().then(setIsFullscreen)}
-                            >
-                                {isFullscreen ? '⇲' : '⛶'}
-                            </button>
-                        </Tooltip>
-
-                        {/* Window controls - always visible since TitleBar is hidden in reader */}
-                        <div className="reader-window-controls">
-                            <Tooltip content="Minimize" position="bottom">
-                                <button className="btn btn-ghost btn-icon" onClick={() => window.electronAPI.window.minimize()}>
-                                    ─
-                                </button>
-                            </Tooltip>
-                            <Tooltip content="Maximize" position="bottom">
-                                <button className="btn btn-ghost btn-icon" onClick={() => window.electronAPI.window.maximize()}>
-                                    □
-                                </button>
-                            </Tooltip>
-                            <Tooltip content="Close" position="bottom">
-                                <button className="btn btn-ghost btn-icon reader-close-btn" onClick={() => window.electronAPI.window.close()}>
-                                    ✕
-                                </button>
-                            </Tooltip>
-                        </div>
                     </div>
                 </div>
 
